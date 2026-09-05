@@ -1,6 +1,8 @@
 /* verilator lint_off TIMESCALEMOD */
 /* verilator lint_off PINCONNECTEMPTY */
 /* verilator lint_off PINMISSING */
+/* verilator lint_off WIDTHEXPAND */
+/* verilator lint_off UNUSEDSIGNAL */
 `default_nettype none
 
 module tt_um_fp16_mac (
