@@ -21,7 +21,8 @@
 // -------------------------------------------------------------
 
 
-
+/* verilator lint_off WIDTHEXPAND */
+/* verilator lint_off UNUSEDSIGNAL */
 module nfp_mul_single
           (clk,
            reset,
