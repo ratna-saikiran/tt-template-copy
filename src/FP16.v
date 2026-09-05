@@ -36,7 +36,9 @@
 // 
 // -------------------------------------------------------------
 
-`timescale 1 ns / 1 ns
+/* verilator lint_off TIMESCALEMOD */
+/* verilator lint_off WIDTHEXPAND */
+/* verilator lint_off UNUSEDSIGNAL */
 
 module FP16
           (clk,
