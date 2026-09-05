@@ -13,8 +13,6 @@ project:
   source_files:
     - "tt_um_fp16_mac.v"
     - "FP16.v"
-    - "nfp_add_single.v"
-    - "nfp_mul_single.v"
   top_module:  "tt_um_fp16_mac"
 
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
