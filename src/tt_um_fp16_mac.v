@@ -20,32 +20,51 @@ module tt_um_fp16_mac (
     assign uio_out = 8'b0;
     assign uio_oe  = 8'b0;
 
-    // Internal registers for our FP16 operands
-    reg [15:0] a_val;
-    reg [15:0] b_val;
-    reg [15:0] c_val;
+    // Internal registers for our FP32 operands (now 32 bits)
+    reg [31:0] a_val;
+    reg [31:0] b_val;
+    reg [31:0] c_val;
 
     // --------------------------------------------------------
-    // 1. Map Switches [2:0] to 8 Fixed FP16 Test Cases
+    // 1. Map Switches [2:0] to 8 Fixed FP32 Test Cases
     // --------------------------------------------------------
+    // FP32 Hex Reference:
+    // 0.0  = 32'h00000000  |  1.0 = 32'h3F800000  |  1.5 = 32'h3FC00000 
+    // 2.0  = 32'h40000000  |  2.5 = 32'h40200000  | -1.0 = 32'hBF800000
+    
     always @(*) begin
         case (ui_in[2:0])
-            3'b000: begin a_val = 16'h3C00; b_val = 16'h3E00; c_val = 16'h0000; end 
-            3'b001: begin a_val = 16'h4000; b_val = 16'h4000; c_val = 16'h3C00; end 
-            3'b010: begin a_val = 16'h3E00; b_val = 16'h4000; c_val = 16'h3E00; end 
-            3'b011: begin a_val = 16'hBC00; b_val = 16'h4100; c_val = 16'h0000; end 
-            3'b100: begin a_val = 16'h0000; b_val = 16'h4000; c_val = 16'h4100; end 
-            3'b101: begin a_val = 16'h3C00; b_val = 16'h3C00; c_val = 16'h3C00; end 
-            3'b110: begin a_val = 16'h4000; b_val = 16'h3E00; c_val = 16'h4000; end 
-            3'b111: begin a_val = 16'h4100; b_val = 16'h4100; c_val = 16'h4100; end 
+            // Case 0: (1.0 * 1.5) + 0.0 = 1.5
+            3'b000: begin a_val = 32'h3F800000; b_val = 32'h3FC00000; c_val = 32'h00000000; end 
+            
+            // Case 1: (2.0 * 2.0) + 1.0 = 5.0 (32'h40A00000)
+            3'b001: begin a_val = 32'h40000000; b_val = 32'h40000000; c_val = 32'h3F800000; end 
+            
+            // Case 2: (1.5 * 2.0) + 1.5 = 4.5 (32'h40900000)
+            3'b010: begin a_val = 32'h3FC00000; b_val = 32'h40000000; c_val = 32'h3FC00000; end 
+            
+            // Case 3: (-1.0 * 2.5) + 0.0 = -2.5 (32'hC0200000)
+            3'b011: begin a_val = 32'hBF800000; b_val = 32'h40200000; c_val = 32'h00000000; end 
+            
+            // Case 4: (0.0 * 2.0) + 2.5 = 2.5 (32'h40200000)
+            3'b100: begin a_val = 32'h00000000; b_val = 32'h40000000; c_val = 32'h40200000; end 
+            
+            // Case 5: (1.0 * 1.0) + 1.0 = 2.0 (32'h40000000)
+            3'b101: begin a_val = 32'h3F800000; b_val = 32'h3F800000; c_val = 32'h3F800000; end 
+            
+            // Case 6: (2.0 * 1.5) + 2.0 = 5.0 (32'h40A00000)
+            3'b110: begin a_val = 32'h40000000; b_val = 32'h3FC00000; c_val = 32'h40000000; end 
+            
+            // Case 7: (2.5 * 2.5) + 2.5 = 8.75 (32'h410C0000)
+            3'b111: begin a_val = 32'h40200000; b_val = 32'h40200000; c_val = 32'h40200000; end 
         endcase
     end
 
     // --------------------------------------------------------
-    // 2. Instantiate your FP16 MAC module
+    // 2. Instantiate your Math module
     // --------------------------------------------------------
-    wire [15:0] mac_out;
-    wire ce_out_dummy; // Dummy wire to prevent empty pin warnings
+    wire [31:0] mac_out;  // Updated to 32 bits
+    wire ce_out_dummy;    // Dummy wire to prevent empty pin warnings
     
     FP16 my_fp16_mac (
         .clk(clk),
@@ -54,21 +73,27 @@ module tt_um_fp16_mac (
         .a(a_val),
         .b(b_val),
         .c(c_val),
-        .ce_out(ce_out_dummy), // Connect to dummy wire
+        .ce_out(ce_out_dummy),
         .Out(mac_out)
     );
 
     // --------------------------------------------------------
-    // 3. Output Display Multiplexer using Switches [4:3]
+    // 3. Output Display Multiplexer using Switches [5:3]
     // --------------------------------------------------------
+    // Since the output is now 32 bits, we need 8 chunks (nibbles) to see the full number.
+    // I expanded the select switch mapping to use 3 switches (ui_in[5:3]) to select the 4-bit chunk.
     reg [3:0] display_nibble;
     
     always @(*) begin
-        case (ui_in[4:3])
-            2'b00: display_nibble = mac_out[3:0];   // Lowest 4 bits
-            2'b01: display_nibble = mac_out[7:4];   // Bits 7 to 4
-            2'b10: display_nibble = mac_out[11:8];  // Bits 11 to 8
-            2'b11: display_nibble = mac_out[15:12]; // Highest 4 bits
+        case (ui_in[5:3])
+            3'b000: display_nibble = mac_out[3:0];   // Lowest 4 bits (Bits 3:0)
+            3'b001: display_nibble = mac_out[7:4];   // Bits 7:4
+            3'b010: display_nibble = mac_out[11:8];  // Bits 11:8
+            3'b011: display_nibble = mac_out[15:12]; // Bits 15:12
+            3'b100: display_nibble = mac_out[19:16]; // Bits 19:16
+            3'b101: display_nibble = mac_out[23:20]; // Bits 23:20
+            3'b110: display_nibble = mac_out[27:24]; // Bits 27:24
+            3'b111: display_nibble = mac_out[31:28]; // Highest 4 bits (Bits 31:28)
         endcase
     end
 
