@@ -19,6 +19,8 @@
 // 
 // -------------------------------------------------------------
 
+/* verilator lint_off WIDTHEXPAND */
+/* verilator lint_off UNUSEDSIGNAL */
 
 module nfp_add_single
           (clk,
