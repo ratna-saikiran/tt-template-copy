@@ -12,6 +12,7 @@ project:
   
   source_files:
     - "tt_um_fp16_mac.v"
+    - "CS_TT.v"
     - "add_fp32.v"
     - "nfp_add_single.v"
   top_module:  "tt_um_fp16_mac"
