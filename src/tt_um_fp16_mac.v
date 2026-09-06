@@ -27,10 +27,7 @@ module tt_um_fp16_mac (
     // --------------------------------------------------------
     // 1. Map Switches [2:0] to 8 Fixed FP32 Test Cases
     // --------------------------------------------------------
-    // The new underlying math is an ADDER: Out1 = In1 + In2
-    // FP32 Hex Reference:
-    // 0.0  = 32'h00000000  |  1.0 = 32'h3F800000  |  1.5 = 32'h3FC00000 
-    // 2.0  = 32'h40000000  |  2.5 = 32'h40200000  | -1.0 = 32'hBF800000
+    // The underlying math is an ADDER: Out1 = In1 + In2
     
     always @(*) begin
         case (ui_in[2:0])
@@ -61,25 +58,31 @@ module tt_um_fp16_mac (
     end
 
     // --------------------------------------------------------
-    // 2. Instantiate your FP32 Math module
+    // 2. Instantiate your CS_TT Top module
     // --------------------------------------------------------
     wire [31:0] adder_out;  
+    wire [7:0]  count_out;
     wire ce_out_dummy;    
     
-    // Instantiating the new add_fp32 module
-    add_fp32 my_fp32_adder (
+    // Instantiating the new CS_TT module
+    CS_TT my_cs_tt (
         .clk(clk),
         .reset(~rst_n),      
         .clk_enable(1'b1),   
         .In1(a_val),
         .In2(b_val),
+        .rst(ui_in[6]),      // Map Switch 6 to the 'rst' signal
+        .dir(ui_in[7]),      // Map Switch 7 to the 'dir' signal
         .ce_out(ce_out_dummy),
-        .Out1(adder_out)
+        .Out1(adder_out),
+        .count(count_out)
     );
 
     // --------------------------------------------------------
     // 3. Output Display Multiplexer using Switches [5:3]
     // --------------------------------------------------------
+    // Since the output is 32 bits, we need 8 chunks (nibbles) to see the full number.
+    // Use 3 switches (ui_in[5:3]) to select the 4-bit chunk.
     reg [3:0] display_nibble;
     
     always @(*) begin
