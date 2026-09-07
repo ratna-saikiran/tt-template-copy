@@ -10,13 +10,12 @@ project:
   # How many tiles your design occupies? A single tile is about 167x108 uM.
   tiles: "1x1" # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 6x2 or 8x2
   
-  source_files:
+ source_files:
     - "tt_um_fp16_mac.v"
     - "CS_TT.v"
     - "add_fp32.v"
     - "nfp_add_single.v"
   top_module:  "tt_um_fp16_mac"
-
 # The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
 # This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
 pinout:
