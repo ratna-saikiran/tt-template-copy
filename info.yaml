@@ -1,23 +1,21 @@
 # Tiny Tapeout project information
 project:
-  title: "FP16 MAC Unit" # Project title
-  author: "Sai Kiran Ratna" # Your name
-  discord: "undopedsilicon" # Your discord username, for communication and automatically assigning you a Tapeout role (optional)
-  description: "FP16 Multiply-Accumulate unit evaluating fixed test cases and outputting to a 7-segment display." # One line description of what your project does
-  language: "Verilog" # other examples include SystemVerilog, Amaranth, VHDL, etc
-  clock_hz: 100 # Clock frequency in Hz (or 0 if not applicable)
+  title: "FP32 Math Unit"
+  author: "Sai Kiran Ratna"
+  discord: ""
+  description: "FP32 Math evaluation mapped to hardware switches and 7-segment display."
+  language: "Verilog"
+  clock_hz: 0
 
-  # How many tiles your design occupies? A single tile is about 167x108 uM.
-  tiles: "1x1" # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2, 6x2 or 8x2
+  tiles: "1x1"
   
- source_files:
+  source_files:
     - "tt_um_fp16_mac.v"
     - "CS_TT.v"
     - "add_fp32.v"
     - "nfp_add_single.v"
-  top_module:  "tt_um_fp16_mac"
-# The pinout of your project. Leave unused pins blank. DO NOT delete or add any pins.
-# This section is for the datasheet/website. Use descriptive names (e.g., RX, TX, MOSI, SCL, SEG_A, etc.).
+  top_module: "tt_um_fp16_mac"
+
 pinout:
   # Inputs
   ui[0]: "Test Case Select [0]"
@@ -25,9 +23,9 @@ pinout:
   ui[2]: "Test Case Select [2]"
   ui[3]: "Display Nibble Select [0]"
   ui[4]: "Display Nibble Select [1]"
-  ui[5]: "Unused"
-  ui[6]: "Unused"
-  ui[7]: "Unused"
+  ui[5]: "Display Nibble Select [2]"
+  ui[6]: "Reset Counter (rst)"
+  ui[7]: "Direction Control (dir)"
 
   # Outputs
   uo[0]: "Segment A"
